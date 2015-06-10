@@ -423,22 +423,32 @@ static NSString * const kTableViewPanState = @"state";
 {
     if (_cellState == kCellStateCenter)
     {
-        NSIndexPath *cellIndexPath = [self.containingTableView indexPathForCell:self];
+        [self setHighlighted:YES animated:NO];
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            usleep(.01*1000*1000);
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSIndexPath *cellIndexPath = [self.containingTableView indexPathForCell:self];
+
+                if ([self.containingTableView.delegate respondsToSelector:@selector(tableView:willSelectRowAtIndexPath:)])
+                {
+                    cellIndexPath = [self.containingTableView.delegate tableView:self.containingTableView willSelectRowAtIndexPath:cellIndexPath];
+                }
+                
+                if (cellIndexPath)
+                {
+                    [self.containingTableView selectRowAtIndexPath:cellIndexPath animated:NO scrollPosition:UITableViewScrollPositionNone];
+                    
+                    if ([self.containingTableView.delegate respondsToSelector:@selector(tableView:didSelectRowAtIndexPath:)])
+                    {
+                        [self.containingTableView.delegate tableView:self.containingTableView didSelectRowAtIndexPath:cellIndexPath];
+                    }
+                }
+                [self setHighlighted:NO animated:YES];
+
+            });
+        });
         
-        if ([self.containingTableView.delegate respondsToSelector:@selector(tableView:willSelectRowAtIndexPath:)])
-        {
-            cellIndexPath = [self.containingTableView.delegate tableView:self.containingTableView willSelectRowAtIndexPath:cellIndexPath];
-        }
-        
-        if (cellIndexPath)
-        {
-            [self.containingTableView selectRowAtIndexPath:cellIndexPath animated:NO scrollPosition:UITableViewScrollPositionNone];
-            
-            if ([self.containingTableView.delegate respondsToSelector:@selector(tableView:didSelectRowAtIndexPath:)])
-            {
-                [self.containingTableView.delegate tableView:self.containingTableView didSelectRowAtIndexPath:cellIndexPath];
-            }
-        }
+//        [self setHighlighted:NO animated:NO];
     }
 }
 
