@@ -425,7 +425,7 @@ static NSString * const kTableViewPanState = @"state";
     {
         [self setHighlighted:YES animated:NO];
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            usleep(.01*1000*1000);
+            usleep(.015*1000*1000);
             dispatch_async(dispatch_get_main_queue(), ^{
                 NSIndexPath *cellIndexPath = [self.containingTableView indexPathForCell:self];
 
